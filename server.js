@@ -30,7 +30,9 @@ function start() {
       } else if (result.choice === "Add a role") {
         addRole();
       } else if (result.choice === "Add an employee") {
-          addEmployee();
+        addEmployee();
+      } else if (result.choice === "Update an employee's role") {
+        updateEmployeeRole();
       }
     });
 }
@@ -101,99 +103,185 @@ function addDepartment() {
 }
 
 function addRole() {
-  connection.query("SELECT * FROM department", (err, results) => {
+  inquirer
+    .prompt([
+      {
+        name: "title",
+        type: "input",
+        message: "Enter the name of the new role:",
+      },
+      {
+        name: "salary",
+        type: "input",
+        message: "Enter the salary for this role:",
+      },
+      {
+        name: "department",
+        type: "input",
+        message: "Enter the department id:",
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO role SET ?",
+        {
+          title: answer.title,
+          salary: answer.salary,
+          department_id: answer.department,
+        },
+        (err) => {
+          if (err) throw err;
+          console.log("Your department was created successfully");
+          start();
+        }
+      );
+    });
+}
+
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        name: "firstName",
+        type: "input",
+        message: "Enter the employee's first name:",
+      },
+      {
+        name: "lastName",
+        type: "input",
+        message: "Enter the employee's last name:",
+      },
+      {
+        name: "role",
+        type: "input",
+        message: "Enter the employee's role ID:",
+      },
+      {
+        name: "manager",
+        type: "input",
+        message: "Enter the employee's manager ID. If none, hit enter.",
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: answer.firstName,
+          last_name: answer.lastName,
+          role_id: answer.role,
+          manager_id: answer.manager,
+        },
+        (err) => {
+          if (err) throw err;
+          console.log("Your department was created successfully");
+          start();
+        }
+      );
+    });
+}
+
+// Update function for employee roles
+
+// function updateEmployeeRole() {
+//     const query =
+//     'SELECT role.role_id, employee.first_name, role.title FROM role LEFT JOIN employee ON role.role_id = employee.role_id';
+//     connection.query(query, (err, results) => {
+//         if (err) throw err;
+//         inquirer.prompt([
+//             {
+//                 name: 'choice',
+//                 type: 'rawlist',
+//                 choices() {
+//                     const choiceArray = [];
+//                     results.forEach(({first_name}) => {
+//                         choiceArray.push(first_name);
+//                     });
+//                     return choiceArray;
+//                 },
+//                 message: "Which employee would you like to update?"
+//             },
+//             {
+//                 name: 'role',
+//                 type: 'rawlist',
+//                 choices() {
+//                     const choiceArray = [];
+//                     results.forEach(({title}) => {
+//                         choiceArray.push(title)
+//                         // console.log(title);
+//                     })
+//                     return choiceArray;
+//                 },
+//                 message: "What is this employee's new role?"
+//             }
+//         ])
+//         .then((answer) => {
+//             let chosenRoleId;
+//             results.forEach((role) => {
+//                 if (role.title === answer.role) {
+//                     chosenRoleId = role.role_id;
+//                 }
+//             })
+//             connection.query('UPDATE employee SET role_id = ? WHERE first_name = ?', [chosenRoleId, answer.choice], (err) => {
+//                 if (err) throw err;
+//                 console.log('Employee successfully updated.');
+//                 start();
+//             })
+//         })
+//     })
+// }
+
+function updateEmployeeRole() {
+  const query =
+    "SELECT role.role_id, employee.first_name, role.title FROM role LEFT JOIN employee ON role.role_id = employee.role_id";
+    connection.query(query, (err, results) => {
     if (err) throw err;
     inquirer
       .prompt([
         {
-          name: "title",
-          type: "input",
-          message: "Enter the name of the new role:",
-        },
-        {
-          name: "salary",
-          type: "input",
-          message: "Enter the salary for this role:",
-        },
-        {
           name: "choice",
           type: "rawlist",
           choices() {
-            const choiceArray = [];
-            results.forEach(({ department_name }) => {
-              choiceArray.push(department_name);
+            const choicesArray = [];
+            results.forEach(({ first_name }) => {
+              if (first_name != null) {
+                choicesArray.push(first_name);
+              }
             });
-            return choiceArray;
+            return choicesArray;
           },
-          message: "Enter the department id:",
+          message: "Which employee would you like to update?",
+        },
+        {
+          name: "newRole",
+          type: "rawlist",
+          choices() {
+            const choicesArray = [];
+            results.forEach(({ title }) => {
+              choicesArray.push(title);
+            });
+            return choicesArray;
+          },
+          message: "What would you like their new role to be?",
         },
       ])
       .then((answer) => {
-        let chosenDepartment;
-        results.forEach((department) => {
-          if ((department.department_name = answer.choice)) {
-            chosenDepartment = department.department_id;
+        let chosenRoleId;
+        results.forEach((role) => {
+          if (role.title === answer.newRole) {
+            chosenRoleId = role.role_id;
           }
         });
-
         connection.query(
-          "INSERT INTO role SET ?",
-          {
-            'title': answer.title,
-            'salary': answer.salary,
-            'department_id': chosenDepartment,
-          },
+          "UPDATE employee SET role_id = ? WHERE first_name = ?",
+          [chosenRoleId, answer.choice],
           (err) => {
             if (err) throw err;
-            console.log("- - - - - - - - - - - - - - - -");
-            console.log("Your role was created successfully");
-            console.log("- - - - - - - - - - - - - - - -");
-            start();
+            console.log("The employee has been successfully updated.");
           }
         );
+        start();
       });
   });
-}
-
-function addEmployee() {
-    inquirer.prompt([
-        {
-            name: "firstName",
-            type: "input",
-            message: "Enter the employee's first name:"
-        },
-        {
-            name: "lastName",
-            type: "input",
-            message: "Enter the employee's last name:"
-        },
-        {
-            name: "role",
-            type: "input",
-            message: "Enter the employee's role ID:"
-        },
-        {
-            name: "manager",
-            type: "input",
-            message: "Enter the employee's manager ID. If none, hit enter."
-        }
-    ])
-    .then((answer) => {
-        connection.query(
-          "INSERT INTO employee SET ?",
-          {
-            first_name: answer.firstName,
-            last_name: answer.lastName,
-            role_id: answer.role,
-            manager_id: answer.manager
-          },
-          (err) => {
-            if (err) throw err;
-            console.log("Your department was created successfully");
-            start();
-          }
-        );
-      });
 }
 
 connection.connect((err) => {
