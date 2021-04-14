@@ -26,9 +26,11 @@ function start() {
       } else if (result.choice === "View all employees") {
         viewEmployees();
       } else if (result.choice === "Add a department") {
-          addDepartment();
+        addDepartment();
       } else if (result.choice === "Add a role") {
-          addRole();
+        addRole();
+      } else if (result.choice === "Add an employee") {
+          addEmployee();
       }
     });
 }
@@ -75,59 +77,123 @@ function viewEmployees() {
 // Add functions for departments, roles, employees
 
 function addDepartment() {
-    inquirer.prompt([
-        {
-            name: 'department',
-            type: 'input',
-            message: 'Enter the name of the department:'
-        }
+  inquirer
+    .prompt([
+      {
+        name: "department",
+        type: "input",
+        message: "Enter the name of the department:",
+      },
     ])
     .then((answer) => {
-        connection.query(
-            'INSERT INTO department SET ?', {
-                department_name: answer.department,
-            },
-            (err) => {
-                if (err) throw err;
-                console.log('Your department was created successfully');
-                start();
-            }
-        );
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          department_name: answer.department,
+        },
+        (err) => {
+          if (err) throw err;
+          console.log("Your department was created successfully");
+          start();
+        }
+      );
     });
-};
+}
 
 function addRole() {
+  connection.query("SELECT * FROM department", (err, results) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "title",
+          type: "input",
+          message: "Enter the name of the new role:",
+        },
+        {
+          name: "salary",
+          type: "input",
+          message: "Enter the salary for this role:",
+        },
+        {
+          name: "choice",
+          type: "rawlist",
+          choices() {
+            const choiceArray = [];
+            results.forEach(({ department_name }) => {
+              choiceArray.push(department_name);
+            });
+            return choiceArray;
+          },
+          message: "Enter the department id:",
+        },
+      ])
+      .then((answer) => {
+        let chosenDepartment;
+        results.forEach((department) => {
+          if ((department.department_name = answer.choice)) {
+            chosenDepartment = department.department_id;
+          }
+        });
+
+        connection.query(
+          "INSERT INTO role SET ?",
+          {
+            'title': answer.title,
+            'salary': answer.salary,
+            'department_id': chosenDepartment,
+          },
+          (err) => {
+            if (err) throw err;
+            console.log("- - - - - - - - - - - - - - - -");
+            console.log("Your role was created successfully");
+            console.log("- - - - - - - - - - - - - - - -");
+            start();
+          }
+        );
+      });
+  });
+}
+
+function addEmployee() {
     inquirer.prompt([
         {
-            name: 'title',
-            type: 'input',
-            message: 'Enter the name of the new role:'
+            name: "firstName",
+            type: "input",
+            message: "Enter the employee's first name:"
         },
         {
-            name: 'salary',
-            type: 'input',
-            message: 'Enter the salary for this role:'
+            name: "lastName",
+            type: "input",
+            message: "Enter the employee's last name:"
         },
         {
-            name: 'department',
-            type: 'input',
-            message: 'Enter the department id:'
+            name: "role",
+            type: "input",
+            message: "Enter the employee's role ID:"
+        },
+        {
+            name: "manager",
+            type: "input",
+            message: "Enter the employee's manager ID. If none, hit enter."
         }
     ])
     .then((answer) => {
         connection.query(
-            'INSERT INTO role SET ?', {
-                'title': answer.title,
-                'salary': answer.salary,
-                'department_id': answer.department,
-            },
-            (err) => {
-                if (err) throw err;
-                console.log("Your role was created successfully")
-                start();
-            }
+          "INSERT INTO employee SET ?",
+          {
+            first_name: answer.firstName,
+            last_name: answer.lastName,
+            role_id: answer.role,
+            manager_id: answer.manager
+          },
+          (err) => {
+            if (err) throw err;
+            console.log("Your department was created successfully");
+            start();
+          }
         );
-    })
+      });
 }
 
 connection.connect((err) => {
