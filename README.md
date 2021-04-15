@@ -16,7 +16,7 @@ npm install
 
 Following this, you will need to initialize the database required, and use the seeding data to populate it with some basic information for ease of use. To do this, simply run the commands located in [the schema.sql file.](./db/schema.sql).
 ## Visuals
-![Demo](./Images/functionality.gif)
+![Demo](./images/functionality.gif)
 ## License
 This project is licensed under the MIT license. Please visit [the license file](https://github.com/lbburnsy/note-taker/blob/main/LICENSE) for more info.
 ## Authors
