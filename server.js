@@ -1,7 +1,9 @@
+// Required packages
 const inquirer = require("inquirer");
 const connection = require("./config/connection.js");
 const conTable = require("console.table");
 
+// Function to initialize the program - gets called after each prompt to continue.
 function start() {
   inquirer
     .prompt({
@@ -16,7 +18,7 @@ function start() {
         "Add a role",
         "Add an employee",
         "Update an employee's role",
-        "Exit"
+        "Exit",
       ],
     })
     .then((result) => {
@@ -35,7 +37,7 @@ function start() {
       } else if (result.choice === "Update an employee's role") {
         updateEmployeeRole();
       } else {
-          quit();
+        quit();
       }
     });
 }
@@ -188,7 +190,7 @@ function addEmployee() {
 function updateEmployeeRole() {
   const query =
     "SELECT role.role_id, employee.first_name, role.title FROM role LEFT JOIN employee ON role.role_id = employee.role_id";
-    connection.query(query, (err, results) => {
+  connection.query(query, (err, results) => {
     if (err) throw err;
     inquirer
       .prompt([
@@ -239,10 +241,14 @@ function updateEmployeeRole() {
   });
 }
 
+// Handles exiting the program
+
 function quit() {
-    console.log("Goodbye");
-    connection.end();
+  console.log("Goodbye");
+  connection.end();
 }
+
+// Initializes the connection
 
 connection.connect((err) => {
   if (err) throw err;
