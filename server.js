@@ -16,6 +16,7 @@ function start() {
         "Add a role",
         "Add an employee",
         "Update an employee's role",
+        "Exit"
       ],
     })
     .then((result) => {
@@ -33,6 +34,8 @@ function start() {
         addEmployee();
       } else if (result.choice === "Update an employee's role") {
         updateEmployeeRole();
+      } else {
+          quit();
       }
     });
 }
@@ -159,7 +162,7 @@ function addEmployee() {
       {
         name: "manager",
         type: "input",
-        message: "Enter the employee's manager ID. If none, hit enter.",
+        message: "Enter the employee's manager ID. If none, enter 0",
       },
     ])
     .then((answer) => {
@@ -180,55 +183,7 @@ function addEmployee() {
     });
 }
 
-// Update function for employee roles
-
-// function updateEmployeeRole() {
-//     const query =
-//     'SELECT role.role_id, employee.first_name, role.title FROM role LEFT JOIN employee ON role.role_id = employee.role_id';
-//     connection.query(query, (err, results) => {
-//         if (err) throw err;
-//         inquirer.prompt([
-//             {
-//                 name: 'choice',
-//                 type: 'rawlist',
-//                 choices() {
-//                     const choiceArray = [];
-//                     results.forEach(({first_name}) => {
-//                         choiceArray.push(first_name);
-//                     });
-//                     return choiceArray;
-//                 },
-//                 message: "Which employee would you like to update?"
-//             },
-//             {
-//                 name: 'role',
-//                 type: 'rawlist',
-//                 choices() {
-//                     const choiceArray = [];
-//                     results.forEach(({title}) => {
-//                         choiceArray.push(title)
-//                         // console.log(title);
-//                     })
-//                     return choiceArray;
-//                 },
-//                 message: "What is this employee's new role?"
-//             }
-//         ])
-//         .then((answer) => {
-//             let chosenRoleId;
-//             results.forEach((role) => {
-//                 if (role.title === answer.role) {
-//                     chosenRoleId = role.role_id;
-//                 }
-//             })
-//             connection.query('UPDATE employee SET role_id = ? WHERE first_name = ?', [chosenRoleId, answer.choice], (err) => {
-//                 if (err) throw err;
-//                 console.log('Employee successfully updated.');
-//                 start();
-//             })
-//         })
-//     })
-// }
+// Update functions
 
 function updateEmployeeRole() {
   const query =
@@ -282,6 +237,11 @@ function updateEmployeeRole() {
         start();
       });
   });
+}
+
+function quit() {
+    console.log("Goodbye");
+    connection.end();
 }
 
 connection.connect((err) => {
